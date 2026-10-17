@@ -8,3 +8,7 @@ backend/virtum.db
 # OS
 .DS_Store
 Thumbs.db
+
+# Local credentials
+.env
+backend/.env

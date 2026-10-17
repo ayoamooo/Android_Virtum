@@ -1,97 +1,85 @@
-# AndroidVirtum (Virtum Health) — Mobile + Mock Backend
+<p align="center">
+  <img src="mobile/assets/images/virtum_logo.png" alt="Virtum" width="168">
+</p>
 
-This repository contains:
+# Android Virtum
 
-- `mobile/`: Flutter mobile app
-- `backend/`: Node.js (Express) mock API used by the mobile app
+Virtum is a Flutter app for recording everyday health metrics and reviewing them in a personal dashboard. A Node.js API handles account data and metric history; the mobile client shows summaries, charts, goals, and an optional assistant.
 
-## Prerequisites
+## Project summary
 
-- Flutter SDK (Dart is bundled with Flutter)
-- Android Studio (or Android SDK + an emulator) for Android builds/runs
-- Node.js + npm for the backend
-- Windows PowerShell (recommended for the helper script)
+The project explores a client–server design for personal wellness tracking. It is a software prototype: its metrics and generated suggestions have not been clinically validated and should not be used for diagnosis or treatment.
 
-## Quick start (run backend + mobile)
+**Keywords:** Flutter, mobile health, REST API, SQLite, data visualisation
 
-From the repo root:
+## Features
 
-```powershell
-.\start-all.ps1
+- Dashboard cards for heart rate, steps, blood pressure, hydration, and related metrics
+- Historical charts and individual biomarker views
+- Personal goals, hydration reminders, and manual metric entry
+- Registration, sign-in, email verification, and password reset flows
+- Optional Firebase sign-in and an assistant endpoint served by the backend
+
+## Architecture
+
+```text
+Flutter app  ── REST/JSON ──>  Express API  ──>  SQLite
+     │                             │
+     └── Firebase Auth (optional)  └── Assistant provider (optional)
 ```
 
-Optional: run on a specific device/emulator ID:
+The Flutter source is under `mobile/lib/`. API routes, persistence, and authentication live in `backend/`.
+
+## Run locally
+
+### Requirements
+
+- Flutter SDK compatible with the constraint in `mobile/pubspec.yaml`
+- Android Studio or an Android SDK and emulator
+- Node.js and npm
+
+### Start the API
 
 ```powershell
-.\start-all.ps1 -DeviceId <DEVICE_ID>
-```
-
-What it does:
-
-- Installs backend dependencies (if needed) and runs `npm start` in `backend/`
-- Runs `flutter pub get` (if needed) and then `flutter run` in `mobile/`
-
-## Run manually
-
-### 1) Start the backend
-
-```powershell
-cd .\backend
-npm install
+cd backend
+npm ci
+Copy-Item .env.example .env
+# Set local values in backend/.env, including a development JWT_SECRET.
 npm start
 ```
 
-By default the API listens on port 3000 and binds to `0.0.0.0` (accessible from your phone on the same network).
+The API uses the `PORT` value from `backend/.env`. Do not commit `.env`; the example file contains the configuration keys without local credentials.
 
-### 2) Run the Flutter app
+### Start the Android app
 
 ```powershell
-cd .\mobile
+cd mobile
 flutter pub get
 flutter run
 ```
 
-## Build an APK
+The client currently uses the base URL in `mobile/lib/services/api_config.dart`. For an Android emulator talking to a backend on the same computer, use `http://10.0.2.2:<PORT>`; for a physical device, use the computer's LAN address. Keep the URL and `PORT` in sync.
 
-Run these commands from `mobile/`:
-
-### Debug APK
+To build an APK:
 
 ```powershell
-cd .\mobile
-flutter build apk --debug
-```
-
-### Release APK
-
-```powershell
-cd .\mobile
+cd mobile
 flutter build apk --release
 ```
 
-APK output path (default Flutter location):
+The release APK is written to `mobile/build/app/outputs/flutter-apk/app-release.apk`.
 
-- Release: `mobile/build/app/outputs/flutter-apk/app-release.apk`
-- Debug: `mobile/build/app/outputs/flutter-apk/app-debug.apk`
+## Academic scope and limitations
 
-## Configure API base URL / IP address
+The app records and presents values supplied by the user or its API. The repository does not document a clinical study, validated prediction model, or medical-device certification. Assistant output depends on the configured provider and should be treated as general information.
 
-The mobile app uses a hardcoded API base URL in:
+## References
 
-- `mobile/lib/services/api_service.dart` → `ApiService.baseUrl`
+- [Flutter documentation](https://docs.flutter.dev/)
+- [Express documentation](https://expressjs.com/)
+- [SQLite documentation](https://www.sqlite.org/docs.html)
+- [Firebase Authentication for Flutter](https://firebase.google.com/docs/auth/flutter/start)
 
-Update this value to point to the machine where `backend/` is running:
+## License
 
-- Android Emulator (AVD): use `http://10.0.2.2:3000`
-- Real device: use your PC’s local IP on the same Wi‑Fi/LAN, e.g. `http://192.168.1.50:3000`
-
-Notes:
-
-- Your phone and PC must be on the same network.
-- Ensure Windows Firewall allows inbound connections to port 3000 (or allow Node.js).
-
-## Troubleshooting
-
-- Can’t connect from device: verify `ApiService.baseUrl`, backend is running, and port 3000 is reachable from the phone.
-- Emulator networking: `localhost` from the emulator is the emulator itself; use `10.0.2.2` to reach your PC.
-
+No repository-level license is included. Contact the author before reusing the project.
